@@ -9,8 +9,7 @@ function CheckItems({ checkItemData, checkItems, setCheckItems, cardId, updatePr
 
     const handleUpdateCheckitem = async (event, checkItemId) => {
         const checkState = event.target.checked ? "complete" : "incomplete";
-        const originalCheckItemsList = [...checkItems];
-        const newCheckItems = originalCheckItemsList.map((checkItem) => checkItem.id === checkItemId ? { ...checkItem, state: checkState } : checkItem);
+        const newCheckItems = checkItems.map((checkItem) => checkItem.id === checkItemId ? { ...checkItem, state: checkState } : checkItem);
 
         setCheckItems(newCheckItems);
 

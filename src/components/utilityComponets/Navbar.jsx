@@ -6,13 +6,12 @@ import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrello } from '@fortawesome/free-brands-svg-icons';
-import theme from '../../Theme/theme';
 
 function Navbar() {
   return (
     <Box sx={{ flexGrow: 1}}>
     <AppBar position="static">
-      <Toolbar sx={{ml:20, padding:2.5}}>
+      <Toolbar xs = {ml=0} sx={{ml:20, padding:2.5}}>
         <IconButton
           size= "large"
           edge="start"
