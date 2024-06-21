@@ -11,7 +11,7 @@ function Navbar() {
   return (
     <Box sx={{ flexGrow: 1}}>
     <AppBar position="static">
-      <Toolbar xs = {ml=0} sx={{ml:20, padding:2.5}}>
+      <Toolbar xs={{ml:0}} sx={{ml:20, padding:2.5}}>
         <IconButton
           size= "large"
           edge="start"
