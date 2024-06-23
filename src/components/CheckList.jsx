@@ -2,35 +2,36 @@ import React, { useState, useEffect } from 'react';
 import { Box, Typography, IconButton, Button, InputBase, LinearProgress } from '@mui/material';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSquareCheck, faTrashCan, faPlus } from "@fortawesome/free-solid-svg-icons";
-import { createCheckitem, getCheckItems } from '../Api';
 import CheckItems from './CheckItems';
 import toast from 'react-hot-toast';
+import { useDispatch, useSelector } from 'react-redux';
+import { createNewCheckitem, fetchCheckitemsData, selectCheckitemsByChecklistId } from '../features/checkItemsSlice';
 
 function CheckList({ checkListData, deleteCheckList, setLoader }) {
-    const [checkItems, setCheckItems] = useState([]);
+    const checkItems = useSelector(selectCheckitemsByChecklistId(checkListData.id));
+    const dispatch = useDispatch();
     const [itemsCompletedPercent, setItemsCompletedPercent] = useState(0);
 
     useEffect(() => {
         const fetchCheckItems = async () => {
             try {
-                setLoader(true);
-                const data = await getCheckItems(checkListData.id);
-                setCheckItems(data);
-                handleProgressBar(data);
+                await dispatch(fetchCheckitemsData(checkListData.id));
             } catch (error) {
                 toast.error("Failed to fetch check items");
-            }finally{
-                setLoader(false);
             }
         };
 
         fetchCheckItems();
-    }, [checkListData.id]);
+    }, [checkListData.id, dispatch]);
+
+
 
     const handleProgressBar = (items) => {
-        let checkItemCount = items.filter((item) => item.state === 'complete').length;
-        let completed = items.length ? Math.floor((checkItemCount / items.length) * 100) : 0;
-        setItemsCompletedPercent(completed);
+        if (items) {
+            let checkItemCount = items.filter((item) => item.state === 'complete').length;
+            let completed = items.length ? Math.floor((checkItemCount / items.length) * 100) : 0;
+            setItemsCompletedPercent(completed);
+        }
     };
 
     const handleSubmit = async (event) => {
@@ -40,20 +41,19 @@ function CheckList({ checkListData, deleteCheckList, setLoader }) {
         if (newCheckItem.length > 2) {
             event.target.checkitemName.value = "";
             try {
-                setLoader(true)
-                const createNewCheckItem = await createCheckitem(newCheckItem, checkListData.id);
-                const updatedCheckItems = [createNewCheckItem, ...checkItems];
-                setCheckItems(updatedCheckItems);
-                handleProgressBar(updatedCheckItems);
+                await dispatch(createNewCheckitem({ checkitemName: newCheckItem, checklistId: checkListData.id }))
             } catch (error) {
-                toast.error('Failed to create check item'); 
-            }finally{
-                setLoader(false)
+                toast.error('Failed to create checkitem');
             }
         } else {
             toast.error("Check item name should be more than 2 characters.");
         }
     };
+
+    useEffect(()=>{
+        handleProgressBar(checkItems);
+    },[checkItems])
+
 
     return (
         <>
@@ -103,10 +103,10 @@ function CheckList({ checkListData, deleteCheckList, setLoader }) {
                             key={checkItem.id}
                             checkItemData={checkItem}
                             checkItems={checkItems}
-                            setCheckItems={setCheckItems}
                             cardId={checkListData.idCard}
                             updateProgressBar={handleProgressBar}
-                            setLoader = {setLoader}
+                            setLoader={setLoader}
+                            checklistID = {checkListData.id}
                         />
                     ))}
 
@@ -136,7 +136,7 @@ function CheckList({ checkListData, deleteCheckList, setLoader }) {
                                 px: 4,
                                 py: 1,
                                 borderRadius: "5px",
-                                border:1,
+                                border: 1,
                                 flex: 1,
                                 minHeight: "32px",
                                 width: "100px",

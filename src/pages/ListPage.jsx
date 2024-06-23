@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { createNewList, getListOfBoard } from '../Api';
 import { Container, Grid, Typography, Button, IconButton, Box } from "@mui/material";
 import CreationForm from '../components/utilityComponets/PageForm';
 import List from '../components/List';
@@ -10,28 +9,28 @@ import theme from '../Theme/theme';
 import Loader from '../components/utilityComponets/Loader';
 import toast from 'react-hot-toast';
 import Toast from '../components/utilityComponets/Toast';
+import { useDispatch, useSelector } from 'react-redux';
+import { createNewListInBoard, fetchListData, selectLists } from '../features/listSlice';
+import { selectLoader } from '../features/loaderSlice';
 
 function ListPage() {
     const { boardId } = useParams();
-    const [lists, setLists] = useState([]);
     const [formState, setFormState] = useState(true);
-    const [loading, setLoading] = useState(false);
+    const dispatch = useDispatch();
+    const lists = useSelector(selectLists);
+    const loader = useSelector(selectLoader);
 
     useEffect(() => {
         const fetchLists = async () => {
             try {
-                setLoading(true);
-                const data = await getListOfBoard(boardId);
-                setLists(data);
+                await dispatch(fetchListData(boardId));
             } catch (err) {
                 toast.error(err.message);
-            } finally {
-                setLoading(false);
             }
         };
 
         fetchLists();
-    }, [boardId]);
+    }, [boardId, dispatch]);
 
     const handleOnSubmit = async (event) => {
         event.preventDefault();
@@ -40,14 +39,10 @@ function ListPage() {
         if (listName.length > 2) {
             event.target.form.value = "";
             try {
-                setLoading(true);
-                const createList = await createNewList(listName, boardId);
-                setLists((prevLists) => [createList, ...prevLists]);
+                await dispatch(createNewListInBoard({ listName, boardId }));
                 setFormState(true);
             } catch (err) {
                 toast.error(err.message);
-            } finally {
-                setLoading(false);
             }
         } else {
             toast.error("List name must be at least 3 characters long");
@@ -56,16 +51,14 @@ function ListPage() {
 
     return (
         <>
-            {loading && <Loader />}
+            {loader && <Loader />}
             <Container sx={{ marginTop: '40px', padding: '20px', width: '100%' }}>
                 <Grid container spacing={2} alignItems="center" justifyContent="space-between">
                     <Grid item sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                         <IconButton component={Link} to="/">
                             <FontAwesomeIcon
                                 icon={faArrowLeft}
-                                style={{
-                                    color: theme.palette.secondary.contrastText,
-                                }}
+                                style={{ color: theme.palette.secondary.contrastText }}
                             />
                         </IconButton>
                         <Typography sx={{ fontSize: 40, fontWeight: 'bold' }} variant="h4">Lists</Typography>
@@ -93,8 +86,6 @@ function ListPage() {
                             key={list.id}
                             listData={list}
                             lists={lists}
-                            setLists={setLists}
-                            setLoader={setLoading}
                         />
                     ))}
                 </Box>

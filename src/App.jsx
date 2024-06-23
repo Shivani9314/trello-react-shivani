@@ -6,6 +6,9 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import theme from './Theme/theme';
 import ListPage from './pages/ListPage';
 import { CssBaseline } from '@mui/material';
+import { Provider } from 'react-redux';
+import { store } from './store/store';
+
 
 function App() {
 
@@ -26,11 +29,13 @@ function App() {
 ])
 
   return (
-    <ThemeProvider theme={theme}>
+    <Provider store={store} >
+      <ThemeProvider theme={theme}>
       <CssBaseline/>
       <Navbar />
       <RouterProvider router={router} />
     </ThemeProvider>
+    </Provider>
   );
 }
 

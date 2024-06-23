@@ -1,33 +1,33 @@
 import React, { useEffect, useState } from 'react';
-import { createBoards, getAllBoards } from '../Api';
 import { Container, Grid, Typography, Button, Paper } from "@mui/material";
 import CreationForm from '../components/utilityComponets/PageForm';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import Toast from '../components/utilityComponets/Toast';
+import { useDispatch, useSelector } from 'react-redux';
+import { createABoard, fetchBoards, selectBoards } from '../features/boardSlice';
+import { selectLoader } from '../features/loaderSlice';
 import Loader from '../components/utilityComponets/Loader';
 
 function BoardPage() {
-  const [boards, setBoards] = useState([]);
   const [formState, setFormState] = useState(true);
-  const [loader, setLoader] = useState(false);
+  const dispatch = useDispatch();
+  const boards = useSelector(selectBoards);
+  const loader = useSelector(selectLoader);
 
   useEffect(() => {
-    const fetchBoards = async () => {
+    const getBoards = () => {
       try {
-        const data = await getAllBoards();
-        setBoards(data);
+        dispatch(fetchBoards());
       } catch (error) {
         toast.error(error.message);
-      } finally {
-        setLoader(false);
       }
     };
 
-    fetchBoards();
-  }, []);
+    getBoards();
+  }, [dispatch]);
 
-  const handleOnSubmit = async (event) => {
+  const handleOnSubmit = (event) => {
     event.preventDefault();
     const boardName = event.target.form.value;
 
@@ -39,15 +39,10 @@ function BoardPage() {
     if (boardName.length > 2) {
       event.target.form.value = "";
       try {
-        setLoader(true);
-        const createNewBoard = await createBoards(boardName);
-        setBoards([createNewBoard, ...boards]);
+        dispatch(createABoard(boardName))
         setFormState(true);
       } catch (err) {
         toast.error(err.message);
-      }
-      finally{
-        setLoader(false);
       }
     } else {
       toast.error("Board name must be at least 3 characters long");

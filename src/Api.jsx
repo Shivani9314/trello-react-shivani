@@ -8,6 +8,11 @@ export const getAllBoards = async () => {
   return boardsResponse.data;
 };
 
+export async function getBoard(boardId) {
+  const boardResponse = await axios.get(`https://api.trello.com/1/boards/${boardId}?key=${apiKey}&token=${apiToken}`);
+  return boardResponse.data;
+}
+
 export const createBoards = async (boardName) => {
   let newBoard = await axios.post(`https://api.trello.com/1/boards/?name=${boardName}&key=${apiKey}&token=${apiToken}`);
   return newBoard.data;

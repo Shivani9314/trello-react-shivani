@@ -5,20 +5,19 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark, faPlus } from "@fortawesome/free-solid-svg-icons";
 import CheckList from './CheckList';
 import toast from 'react-hot-toast';
+import { useDispatch, useSelector } from 'react-redux';
+import { createChecklist, deleteAChecklist, fetchChecklistData, selectChecklistsByCardId } from '../features/checkListSlice';
 
-function CardModal({ state, setState, cardData, setLoader }) {
-    const [checkLists, setCheckLists] = useState([]);
+function CardModal({ state, setState, cardData }) {
+    const checkLists = useSelector(selectChecklistsByCardId(cardData.id));
+    const dispatch = useDispatch();
 
     useEffect(() => {
         const fetchCheckListData = async () => {
             try {
-                setLoader(true);
-                const checkListData = await getCheckLists(cardData.id);
-                setCheckLists(checkListData);
+                await dispatch(fetchChecklistData(cardData.id))
             } catch (error) {
                 toast.error("Error fetching checklist data:", error.message);
-            } finally {
-                setLoader(false)
             }
         };
 
@@ -32,14 +31,9 @@ function CardModal({ state, setState, cardData, setLoader }) {
         if (newCheckListName.length > 2) {
             event.target.checkListName.value = "";
             try {
-                setLoader(true);
-                const createNewCheckList = await createCheckList(newCheckListName, cardData.id);
-                setCheckLists([createNewCheckList, ...checkLists]);
+                await dispatch(createChecklist({checklistName:newCheckListName, cardId:cardData.id}))
             } catch (error) {
                 toast.error("Error creating checklist:", error.message);
-            }
-            finally {
-                setLoader(false);
             }
         } else {
             toast.error("Checklist name should be more than 2 characters.");
@@ -48,15 +42,9 @@ function CardModal({ state, setState, cardData, setLoader }) {
 
     const handleDeleteList = async (checkListId) => {
         try {
-            setLoader(true)
-            const newCheckLists = checkLists.filter((checkList) => checkList.id !== checkListId);
-            await deleteChecklist(checkListId);
-            setCheckLists(newCheckLists);
+            await dispatch(deleteAChecklist(checkListId))
         } catch (error) {
             toast.error(`Error deleting checklist: ${error.message}`);
-        }
-        finally {
-            setLoader(false);
         }
     };
 
@@ -123,7 +111,6 @@ function CardModal({ state, setState, cardData, setLoader }) {
                             key={checkList.id}
                             checkListData={checkList}
                             deleteCheckList={() => handleDeleteList(checkList.id)}
-                            setLoader={setLoader}
                         />
                     ))}
                 </Box>
