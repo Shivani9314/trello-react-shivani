@@ -5,32 +5,44 @@ import { faSquareCheck, faTrashCan, faPlus } from "@fortawesome/free-solid-svg-i
 import CheckItems from './CheckItems';
 import toast from 'react-hot-toast';
 import { useDispatch, useSelector } from 'react-redux';
-import { createNewCheckitem, fetchCheckitemsData, selectCheckitemsByChecklistId } from '../features/checkItemsSlice';
+import { createNewCheckitem, fetchCheckitemsData, selectCheckitemsByChecklistId,deleteACheckItem, upgradeCheckitems  } from '../features/checkItemsSlice';
 
-function CheckList({ checkListData, deleteCheckList, setLoader }) {
+function CheckList({ checkListData, deleteCheckList }) {
     const checkItems = useSelector(selectCheckitemsByChecklistId(checkListData.id));
     const dispatch = useDispatch();
-    const [itemsCompletedPercent, setItemsCompletedPercent] = useState(0);
 
     useEffect(() => {
         const fetchCheckItems = async () => {
             try {
-                await dispatch(fetchCheckitemsData(checkListData.id));
+                await dispatch(fetchCheckitemsData(checkListData.id)).unwrap();
             } catch (error) {
                 toast.error("Failed to fetch check items");
             }
         };
 
         fetchCheckItems();
-    }, [checkListData.id, dispatch]);
+    }, []);
 
 
+    const totalItems = checkItems.length;
+    const completedItems = checkItems.filter((item) => item.state === "complete").length;
+    const percentCompletion = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
 
-    const handleProgressBar = (items) => {
-        if (items) {
-            let checkItemCount = items.filter((item) => item.state === 'complete').length;
-            let completed = items.length ? Math.floor((checkItemCount / items.length) * 100) : 0;
-            setItemsCompletedPercent(completed);
+
+    const handleUpdateCheckitem = async (event, checkItemId) => {
+        const checkState = event.target.checked ? "complete" : "incomplete";
+        try {
+            await dispatch(upgradeCheckitems({cardId :checkListData.idCard, checkitemId: checkItemId, checkState: checkState,checklistId:checkListData.id})).unwrap(); 
+        } catch (error) {
+            toast.error('Failed to update check item'); 
+        }
+    };
+
+    const handleDeleteCheckitem = async (checkItemId) => {
+        try {
+            await dispatch(deleteACheckItem({ checkitemId: checkItemId ,checklistId: checkListData.id })).unwrap();
+        } catch (error) {
+            toast.error('Failed to delete check item'); 
         }
     };
 
@@ -41,7 +53,7 @@ function CheckList({ checkListData, deleteCheckList, setLoader }) {
         if (newCheckItem.length > 2) {
             event.target.checkitemName.value = "";
             try {
-                await dispatch(createNewCheckitem({ checkitemName: newCheckItem, checklistId: checkListData.id }))
+                await dispatch(createNewCheckitem({ checkitemName: newCheckItem, checklistId: checkListData.id })).unwrap();
             } catch (error) {
                 toast.error('Failed to create checkitem');
             }
@@ -49,11 +61,6 @@ function CheckList({ checkListData, deleteCheckList, setLoader }) {
             toast.error("Check item name should be more than 2 characters.");
         }
     };
-
-    useEffect(()=>{
-        handleProgressBar(checkItems);
-    },[checkItems])
-
 
     return (
         <>
@@ -89,11 +96,11 @@ function CheckList({ checkListData, deleteCheckList, setLoader }) {
                             color: 'white'
                         }}
                     >
-                        {itemsCompletedPercent}%
+                        {percentCompletion}%
                     </Typography>
                     <LinearProgress
                         variant="determinate"
-                        value={itemsCompletedPercent}
+                        value={percentCompletion}
                         sx={{ flexGrow: 1 }}
                     />
                 </Box>
@@ -103,10 +110,9 @@ function CheckList({ checkListData, deleteCheckList, setLoader }) {
                             key={checkItem.id}
                             checkItemData={checkItem}
                             checkItems={checkItems}
-                            cardId={checkListData.idCard}
-                            updateProgressBar={handleProgressBar}
-                            setLoader={setLoader}
                             checklistID = {checkListData.id}
+                            handleDeleteCheckitem = {()=> handleDeleteCheckitem(checkItem.id)}
+                            handleUpdateCheckitem = {(event)=>handleUpdateCheckitem(event,checkItem.id)}
                         />
                     ))}
 

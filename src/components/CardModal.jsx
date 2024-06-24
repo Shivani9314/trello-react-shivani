@@ -14,14 +14,14 @@ function CardModal({ state, setState, cardData }) {
     useEffect(() => {
         const fetchCheckListData = async () => {
             try {
-                await dispatch(fetchChecklistData(cardData.id))
+                await dispatch(fetchChecklistData(cardData.id)).unwrap()
             } catch (error) {
                 toast.error("Error fetching checklist data:", error.message);
             }
         };
 
         fetchCheckListData();
-    }, [cardData.id]);
+    }, []);
 
     const handleFormSubmit = async (event) => {
         event.preventDefault();
@@ -30,7 +30,7 @@ function CardModal({ state, setState, cardData }) {
         if (newCheckListName.length > 2) {
             event.target.checkListName.value = "";
             try {
-                await dispatch(createChecklist({checklistName:newCheckListName, cardId:cardData.id}))
+                await dispatch(createChecklist({checklistName:newCheckListName, cardId:cardData.id})).unwrap();
             } catch (error) {
                 toast.error("Error creating checklist:", error.message);
             }
@@ -39,9 +39,9 @@ function CardModal({ state, setState, cardData }) {
         }
     };
 
-    const handleDeleteList = async (checkListId) => {
+    const handleDeleteList = async (checklistId , cardId) => {
         try {
-            await dispatch(deleteAChecklist(checkListId))
+            await dispatch(deleteAChecklist({checklistId, cardId})).unwrap()
         } catch (error) {
             toast.error(`Error deleting checklist: ${error.message}`);
         }
@@ -109,7 +109,7 @@ function CardModal({ state, setState, cardData }) {
                         <CheckList
                             key={checkList.id}
                             checkListData={checkList}
-                            deleteCheckList={() => handleDeleteList(checkList.id)}
+                            deleteCheckList={() => handleDeleteList(checkList.id, cardData.id)}
                         />
                     ))}
                 </Box>

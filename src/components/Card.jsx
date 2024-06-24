@@ -15,7 +15,7 @@ function Card({ cardData }) {
     event.stopPropagation(); 
 
     try {
-      await dispatch(deleteACard(cardData.id)).unwrap();
+      await dispatch(deleteACard({cardId:cardData.id, listId:cardData.idList})).unwrap();
     } catch (error) {
       toast.error("Error in Deleting Card");
     } 

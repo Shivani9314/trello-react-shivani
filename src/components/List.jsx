@@ -17,17 +17,17 @@ function List({ listData, setLoader }) {
             try {
                 await dispatch(fetchCardsData(listData.id)).unwrap();
             } catch (error) {
-                toast.error(error.message);
+                toast.error("Cannot fetch the cardsdata");
             }
         };
         fetchData();
-    }, [dispatch, listData.id]);
+    }, []);
 
     const handleClickDelete = async () => {
         try {
             await dispatch(deleteAList(listData.id)).unwrap();
         } catch (error) {
-            toast.error(error.message);
+            toast.error("Cannot delete a list");
         } 
     };
 
@@ -39,7 +39,7 @@ function List({ listData, setLoader }) {
             try {
                 await dispatch(createACard({ cardName: newCardName, listId: listData.id })).unwrap();
             } catch (error) {
-                toast.error(error.message);
+                toast.error("Cannot create a card");
             }
         } else {
             toast.error("Card name should be more than 2 characters.");

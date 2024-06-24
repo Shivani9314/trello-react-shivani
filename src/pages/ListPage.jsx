@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Container, Grid, Typography, Button, IconButton, Box } from "@mui/material";
-import CreationForm from '../components/utilityComponets/PageForm';
 import List from '../components/List';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
@@ -10,12 +9,12 @@ import Loader from '../components/utilityComponets/Loader';
 import toast from 'react-hot-toast';
 import Toast from '../components/utilityComponets/Toast';
 import { useDispatch, useSelector } from 'react-redux';
-import { createNewListInBoard, fetchListData, selectLists } from '../features/listSlice';
+import { fetchListData, selectLists } from '../features/listSlice';
 import { selectLoader } from '../features/loaderSlice';
+import FormModal from '../components/utilityComponets/FormModal';
 
 function ListPage() {
     const { boardId } = useParams();
-    const [formState, setFormState] = useState(true);
     const dispatch = useDispatch();
     const lists = useSelector(selectLists);
     const loader = useSelector(selectLoader);
@@ -30,24 +29,8 @@ function ListPage() {
         };
 
         fetchLists();
-    }, [boardId, dispatch]);
+    }, [boardId]);
 
-    const handleOnSubmit = async (event) => {
-        event.preventDefault();
-        const listName = event.target.form.value;
-
-        if (listName.length > 2) {
-            event.target.form.value = "";
-            try {
-                await dispatch(createNewListInBoard({ listName, boardId }));
-                setFormState(true);
-            } catch (err) {
-                toast.error(err.message);
-            }
-        } else {
-            toast.error("List name must be at least 3 characters long");
-        }
-    };
 
     return (
         <>
@@ -64,9 +47,7 @@ function ListPage() {
                         <Typography sx={{ fontSize: 40, fontWeight: 'bold' }} variant="h4">Lists</Typography>
                     </Grid>
                     <Grid item>
-                        <Button variant="contained" onClick={() => setFormState(false)} sx={{ padding: 2, fontSize: 17, fontWeight: 600 }}>
-                            + Create List
-                        </Button>
+                        <FormModal name='List'/>
                     </Grid>
                 </Grid>
 
@@ -90,12 +71,6 @@ function ListPage() {
                     ))}
                 </Box>
             </Container>
-            <CreationForm
-                state={formState}
-                onSubmit={handleOnSubmit}
-                setState={setFormState}
-                name="List"
-            />
             <Toast />
         </>
     );

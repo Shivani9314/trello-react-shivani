@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { createNewCard, deleteCardApi, getCardsOfList } from "../Api";
-import { hideLoader, showLoader } from "./loaderSlice"; 
+import { hideLoader, showLoader } from "./loaderSlice";
 
 const initialState = {
     cards: {},
@@ -8,7 +8,7 @@ const initialState = {
 
 export const fetchCardsData = createAsyncThunk('cards/fetchCardsData', async (listId, { dispatch }) => {
     try {
-        dispatch(showLoader()); 
+        dispatch(showLoader());
         const cardsDataOfList = await getCardsOfList(listId);
         return { listId, cards: cardsDataOfList };
     } catch (error) {
@@ -20,25 +20,25 @@ export const fetchCardsData = createAsyncThunk('cards/fetchCardsData', async (li
 
 export const createACard = createAsyncThunk('cards/createACard', async ({ cardName, listId }, { dispatch }) => {
     try {
-        dispatch(showLoader()); 
+        dispatch(showLoader());
         const newCard = await createNewCard(cardName, listId);
         return { listId, card: newCard };
     } catch (error) {
         throw error;
     } finally {
-        dispatch(hideLoader()); 
+        dispatch(hideLoader());
     }
 });
 
-export const deleteACard = createAsyncThunk('cards/deleteCard', async (cardId, { dispatch }) => {
+export const deleteACard = createAsyncThunk('cards/deleteCard', async ({ cardId, listId }, { dispatch }) => {
     try {
-        dispatch(showLoader()); 
+        dispatch(showLoader());
         await deleteCardApi(cardId);
-        return cardId;
+        return { cardId, listId };
     } catch (error) {
         throw error;
     } finally {
-        dispatch(hideLoader()); 
+        dispatch(hideLoader());
     }
 });
 
@@ -58,9 +58,8 @@ const cardSlice = createSlice({
                 state.cards[action.payload.listId].unshift(action.payload.card);
             })
             .addCase(deleteACard.fulfilled, (state, action) => {
-                for (let listId in state.cards) {
-                    state.cards[listId] = state.cards[listId].filter(card => card.id !== action.payload);
-                }
+                const {cardId , listId} = action.payload;
+                state.cards[listId] = state.cards[listId].filter(card => card.id !== cardId);
             });
     }
 });

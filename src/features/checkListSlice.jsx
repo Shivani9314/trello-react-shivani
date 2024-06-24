@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { createCheckList, getCheckLists, deleteChecklist } from "../Api";
-import { hideLoader, showLoader } from "./loaderSlice"; 
+import { hideLoader, showLoader } from "./loaderSlice";
 
 const initialState = {
     checklists: {},
@@ -10,13 +10,13 @@ export const fetchChecklistData = createAsyncThunk(
     'checklists/fetchChecklistData',
     async (cardId, { dispatch }) => {
         try {
-            dispatch(showLoader()); 
+            dispatch(showLoader());
             const checklistsData = await getCheckLists(cardId);
             return { cardId, checklists: checklistsData };
         } catch (error) {
             throw error;
         } finally {
-            dispatch(hideLoader()); 
+            dispatch(hideLoader());
         }
     }
 );
@@ -31,22 +31,22 @@ export const createChecklist = createAsyncThunk(
         } catch (error) {
             throw error;
         } finally {
-            dispatch(hideLoader()); 
+            dispatch(hideLoader());
         }
     }
 );
 
 export const deleteAChecklist = createAsyncThunk(
     'checklists/deleteChecklist',
-    async (checklistId, { dispatch }) => {
+    async ({ checklistId, cardId }, { dispatch }) => {
         try {
-            dispatch(showLoader()); 
+            dispatch(showLoader());
             await deleteChecklist(checklistId);
-            return checklistId;
+            return { checklistId, cardId };
         } catch (error) {
             throw error;
         } finally {
-            dispatch(hideLoader()); 
+            dispatch(hideLoader());
         }
     }
 );
@@ -66,9 +66,8 @@ const checklistSlice = createSlice({
                 state.checklists[cardId].unshift(checklist);
             })
             .addCase(deleteAChecklist.fulfilled, (state, action) => {
-                for (let cardId in state.checklists) {
-                    state.checklists[cardId] = state.checklists[cardId].filter(checklist => checklist.id !== action.payload);
-                }
+                const {checklistId , cardId} = action.payload;
+                state.checklists[cardId] = state.checklists[cardId].filter(checklist => checklist.id !== checklistId);
             });
     }
 });
