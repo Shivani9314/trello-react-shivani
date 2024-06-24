@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { createBoards, getAllBoards, getBoard } from "../Api";
-import { hideLoader, showLoader } from "./loaderSlice"; // Assuming you have loaderSlice implemented
+import { hideLoader, showLoader } from "./loaderSlice"; 
 
 const initialState = {
     boards: [],
