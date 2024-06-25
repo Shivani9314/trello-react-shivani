@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Box, Typography, IconButton, Button, InputBase, LinearProgress } from '@mui/material';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSquareCheck, faTrashCan, faPlus } from "@fortawesome/free-solid-svg-icons";
@@ -10,6 +10,7 @@ import { createNewCheckitem, fetchCheckitemsData, selectCheckitemsByChecklistId,
 function CheckList({ checkListData, deleteCheckList }) {
     const checkItems = useSelector(selectCheckitemsByChecklistId(checkListData.id));
     const dispatch = useDispatch();
+    const checkitemRef = useRef();
 
     useEffect(() => {
         const fetchCheckItems = async () => {
@@ -48,10 +49,10 @@ function CheckList({ checkListData, deleteCheckList }) {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        const newCheckItem = event.target.checkitemName.value;
+        const newCheckItem = checkitemRef.current.value;
 
         if (newCheckItem.length > 2) {
-            event.target.checkitemName.value = "";
+            checkitemRef.current.value = "";
             try {
                 await dispatch(createNewCheckitem({ checkitemName: newCheckItem, checklistId: checkListData.id })).unwrap();
             } catch (error) {
@@ -137,6 +138,7 @@ function CheckList({ checkListData, deleteCheckList }) {
                             placeholder="Add item"
                             id="checkitemName"
                             name="checkitemName"
+                            inputRef={checkitemRef}
                             sx={{
                                 color: "white",
                                 px: 4,

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { IconButton, Button, Modal, Paper, Typography, TextField, Box } from '@mui/material';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark, faPlus } from "@fortawesome/free-solid-svg-icons";
@@ -10,6 +10,7 @@ import { createChecklist, deleteAChecklist, fetchChecklistData, selectChecklists
 function CardModal({ state, setState, cardData }) {
     const checkLists = useSelector(selectChecklistsByCardId(cardData.id));
     const dispatch = useDispatch();
+    const checklistRef = useRef();
 
     useEffect(() => {
         const fetchCheckListData = async () => {
@@ -25,10 +26,10 @@ function CardModal({ state, setState, cardData }) {
 
     const handleFormSubmit = async (event) => {
         event.preventDefault();
-        const newCheckListName = event.target.checkListName.value;
+        const newCheckListName = checklistRef.current.value;
 
         if (newCheckListName.length > 2) {
-            event.target.checkListName.value = "";
+            checklistRef.current.value= "";
             try {
                 await dispatch(createChecklist({checklistName:newCheckListName, cardId:cardData.id})).unwrap();
             } catch (error) {
@@ -91,6 +92,7 @@ function CardModal({ state, setState, cardData }) {
                             id="checkListName"
                             name="checkListName"
                             fullWidth
+                            inputRef={checklistRef}
                         />
                         <Button type="submit" sx={{
                             ml: 1, height: '100%',
